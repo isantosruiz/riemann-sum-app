@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Suma de Riemann</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7fb;
+        --card: #ffffff;
+        --text: #16202a;
+        --muted: #5e6a75;
+        --accent: #1976d2;
+        --danger: #d62828;
+        --border: #d9dee5;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: radial-gradient(circle at 20% 10%, #e7f3ff 0%, var(--bg) 45%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1080px;
+        margin: 1.5rem auto;
+        padding: 0 1rem;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1rem;
+        box-shadow: 0 8px 24px rgba(20, 30, 45, 0.06);
+      }
+
+      h1,
+      h2 {
+        margin-top: 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.9rem;
+      }
+
+      label {
+        display: flex;
+        flex-direction: column;
+        font-weight: 600;
+        gap: 0.35rem;
+      }
+
+      .label-text {
+        white-space: nowrap;
+      }
+
+      input,
+      select,
+      button {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.6rem 0.7rem;
+        font-size: 0.95rem;
+      }
+
+      button {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:hover {
+        filter: brightness(1.05);
+      }
+
+      .error {
+        border: 1px solid #f3a7a7;
+        background: #fff5f5;
+        color: var(--danger);
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+      }
+
+      .result-block {
+        margin-top: 1rem;
+      }
+
+      .formula {
+        overflow-x: auto;
+        background: #fafcff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.7rem;
+        margin: 0.5rem 0;
+      }
+
+      .numeric {
+        font-size: 1rem;
+        font-weight: 400;
+        color: inherit;
+        margin: 0;
+      }
+
+      .numeric-box {
+        margin-top: 0.9rem;
+        margin-bottom: 1rem;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+      }
+
+      .actions {
+        margin-top: 0;
+      }
+
+      .calculate-btn {
+        margin-top: 0.8rem;
+      }
+
+      .limit-btn {
+        margin-top: 0.55rem;
+        margin-bottom: 0.6rem;
+      }
+
+      img {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        margin-top: 0.5rem;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .page-footer {
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .page-footer a {
+        color: inherit;
+        text-decoration: none;
+      }
+    </style>
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]] },
+        svg: { fontCache: "global" }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Suma de Riemann</h1>
+        <p class="muted">
+          Ingresa una función \(f(x)\), un intervalo \([a,b]\), el número de
+          puntos \(n\) y el método de suma.
+        </p>
+
+        <form id="sum-form" method="post">
+          <div class="grid">
+            <label>
+              <span class="label-text">Función \(f(x)\)</span>
+              <input type="text" name="function" value="{{ function_input }}" required />
+            </label>
+
+            <label>
+              <span class="label-text">Límite inferior \(a\)</span>
+              <input type="text" name="a" value="{{ a_input }}" required />
+            </label>
+
+            <label>
+              <span class="label-text">Límite superior \(b\)</span>
+              <input type="text" name="b" value="{{ b_input }}" required />
+            </label>
+
+            <label>
+              <span class="label-text">Número de puntos \(n\)</span>
+              <input type="number" min="1" step="1" name="n" value="{{ n_input }}" required />
+            </label>
+
+            <label>
+              <span class="label-text">Método</span>
+              <select id="method-select" name="method">
+                {% for key, label in methods.items() %}
+                <option value="{{ key }}" {% if key == method_input %}selected{% endif %}>
+                  {{ label }}
+                </option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+          <input type="hidden" name="action" value="calculate" />
+          <button class="calculate-btn" type="submit">Calcular la suma</button>
+        </form>
+      </div>
+
+      {% if error %}
+      <div class="card result-block">
+        <div class="error">{{ error }}</div>
+      </div>
+      {% endif %}
+
+      {% if latex_symbolic %}
+      <div class="card result-block">
+        <h2>Resultado</h2>
+        <div class="formula">$$ \displaystyle {{ latex_symbolic|safe }} $$</div>
+        <div class="formula">$$ \displaystyle {{ latex_n_value|safe }} $$</div>
+        {% if plot_base64 %}
+        <img
+          src="data:image/png;base64,{{ plot_base64 }}"
+          alt="Gráfica de la suma de Riemann con área sombreada"
+        />
+        {% endif %}
+
+        {% if symbolic_notice %}
+        <p class="muted">{{ symbolic_notice }}</p>
+        {% endif %}
+
+        <div class="actions">
+          <form method="post">
+            <input type="hidden" name="function" value="{{ function_input }}" />
+            <input type="hidden" name="a" value="{{ a_input }}" />
+            <input type="hidden" name="b" value="{{ b_input }}" />
+            <input type="hidden" name="n" value="{{ n_input }}" />
+            <input type="hidden" name="method" value="{{ method_input }}" />
+            <input type="hidden" name="action" value="limit" />
+            <button class="limit-btn" type="submit">Calcular el límite</button>
+          </form>
+        </div>
+
+        {% if latex_limit_value %}
+        <div class="formula">$$ \displaystyle {{ latex_limit_value|safe }} $$</div>
+        {% endif %}
+
+        {% if limit_error %}
+        <div class="error">{{ limit_error }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <footer class="page-footer">
+        &copy; 2025,
+        <a href="https://isantosruiz.github.io/home/" target="_blank" rel="noopener noreferrer">
+          Ildeberto de los Santos Ruiz
+        </a>
+      </footer>
+    </div>
+    <script>
+      (function () {
+        const hasPreviousResult = {{ "true" if latex_symbolic else "false" }};
+        if (!hasPreviousResult) {
+          return;
+        }
+
+        const form = document.getElementById("sum-form");
+        const methodSelect = document.getElementById("method-select");
+        if (!form || !methodSelect) {
+          return;
+        }
+
+        methodSelect.addEventListener("change", function () {
+          form.submit();
+        });
+      })();
+    </script>
+  </body>
+</html>
