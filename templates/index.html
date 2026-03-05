@@ -226,6 +226,9 @@
       {% if latex_symbolic %}
       <div class="card result-block">
         <h2>Resultado</h2>
+        <div class="formula">
+          $$ \displaystyle {{ latex_fx_i|safe }},\quad {{ latex_delta_x|safe }} $$
+        </div>
         <div class="formula">$$ \displaystyle {{ latex_symbolic|safe }} $$</div>
         <div class="formula">$$ \displaystyle {{ latex_n_value|safe }} $$</div>
         {% if plot_base64 %}
