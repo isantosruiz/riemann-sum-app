@@ -168,7 +168,7 @@
         <h1>Suma de Riemann</h1>
         <p class="muted">
           Ingresa una función \(f(x)\), un intervalo \([a,b]\), el número de
-          puntos \(n\) y el método de suma.
+          puntos y el método de suma.
         </p>
 
         <form id="sum-form" method="post">
@@ -190,7 +190,15 @@
 
             <label>
               <span class="label-text">Número de puntos \(n\)</span>
-              <input type="number" min="1" step="1" name="n" value="{{ n_input }}" required />
+              <input
+                id="n-input"
+                type="number"
+                min="1"
+                step="1"
+                name="n"
+                value="{{ n_input }}"
+                required
+              />
             </label>
 
             <label>
@@ -269,11 +277,19 @@
 
         const form = document.getElementById("sum-form");
         const methodSelect = document.getElementById("method-select");
-        if (!form || !methodSelect) {
+        const nInput = document.getElementById("n-input");
+        if (!form || !methodSelect || !nInput) {
           return;
         }
 
         methodSelect.addEventListener("change", function () {
+          form.submit();
+        });
+
+        nInput.addEventListener("change", function () {
+          if (!nInput.value) {
+            return;
+          }
           form.submit();
         });
       })();
