@@ -99,41 +99,44 @@ def parse_expression(expr_text: str) -> sp.Expr:
 
 def symbolic_riemann_sum_components(
     expr: sp.Expr, a: sp.Expr, b: sp.Expr, method: str
-) -> tuple[sp.Expr, sp.Expr]:
+) -> tuple[sp.Expr, sp.Expr, sp.Expr, sp.Expr]:
     delta = (b - a) / n
 
     if method == "left":
-        term = sp.simplify(expr.subs(x, a + (i - 1) * delta) * delta)
+        f_xi = sp.simplify(expr.subs(x, a + (i - 1) * delta))
+        term = sp.simplify(f_xi * delta)
         sum_notation = sp.Sum(term, (i, 1, n))
-        return sum_notation, sp.simplify(sp.summation(term, (i, 1, n)))
+        return sum_notation, sp.simplify(sp.summation(term, (i, 1, n))), f_xi, sp.simplify(delta)
 
     if method == "right":
-        term = sp.simplify(expr.subs(x, a + i * delta) * delta)
+        f_xi = sp.simplify(expr.subs(x, a + i * delta))
+        term = sp.simplify(f_xi * delta)
         sum_notation = sp.Sum(term, (i, 1, n))
-        return sum_notation, sp.simplify(sp.summation(term, (i, 1, n)))
+        return sum_notation, sp.simplify(sp.summation(term, (i, 1, n))), f_xi, sp.simplify(delta)
 
     if method == "midpoint":
-        term = sp.simplify(expr.subs(x, a + (i - sp.Rational(1, 2)) * delta) * delta)
+        f_xi = sp.simplify(expr.subs(x, a + (i - sp.Rational(1, 2)) * delta))
+        term = sp.simplify(f_xi * delta)
         sum_notation = sp.Sum(term, (i, 1, n))
-        return sum_notation, sp.simplify(sp.summation(term, (i, 1, n)))
+        return sum_notation, sp.simplify(sp.summation(term, (i, 1, n))), f_xi, sp.simplify(delta)
 
     if method == "trapezoidal":
-        term = sp.simplify(
-            delta
-            * (
+        f_xi = sp.simplify(
+            (
                 expr.subs(x, a + (i - 1) * delta)
                 + expr.subs(x, a + i * delta)
             )
             / 2
         )
+        term = sp.simplify(f_xi * delta)
         sum_notation = sp.Sum(term, (i, 1, n))
-        return sum_notation, sp.simplify(sp.summation(term, (i, 1, n)))
+        return sum_notation, sp.simplify(sp.summation(term, (i, 1, n))), f_xi, sp.simplify(delta)
 
     raise ValueError("Método no soportado.")
 
 
 def symbolic_riemann_sum(expr: sp.Expr, a: sp.Expr, b: sp.Expr, method: str) -> sp.Expr:
-    _, result = symbolic_riemann_sum_components(expr, a, b, method)
+    _, result, _, _ = symbolic_riemann_sum_components(expr, a, b, method)
     return result
 
 
@@ -262,6 +265,8 @@ def index():
         "limit_requested": False,
         "methods": METHODS,
         "error": None,
+        "latex_fx_i": None,
+        "latex_delta_x": None,
         "latex_symbolic": None,
         "latex_n_value": None,
         "latex_limit_value": None,
@@ -293,15 +298,20 @@ def index():
             if n_partitions <= 0:
                 raise ValueError("El número de particiones debe ser mayor que cero.")
 
-            symbolic_sum_notation, symbolic_sum = symbolic_riemann_sum_components(
+            symbolic_sum_notation, symbolic_sum, f_xi_expr, delta = symbolic_riemann_sum_components(
                 expr, a, b, context["method_input"]
             )
             n_sum = sp.simplify(symbolic_sum.subs(n, n_partitions))
             unresolved = unresolved_parameters(expr, a, b)
 
+            x_i = sp.Symbol("x_i")
+            context["latex_fx_i"] = sp.latex(sp.Eq(sp.Function("f")(x_i), f_xi_expr))
+            context["latex_delta_x"] = "\\Delta x = " + sp.latex(delta)
+
             lhs_symbolic = sp.latex(sp.Symbol("S_n"))
+            generic_sum = "\\sum_{i=1}^{n} f\\left(x_i\\right)\\,\\Delta x"
             context["latex_symbolic"] = (
-                f"{lhs_symbolic} = {sp.latex(symbolic_sum_notation)} = {sp.latex(symbolic_sum)}"
+                f"{lhs_symbolic} = {generic_sum} = {sp.latex(symbolic_sum_notation)} = {sp.latex(symbolic_sum)}"
             )
             lhs_n = sp.latex(sp.Symbol(f"S_{n_partitions}"))
             rhs_n = sp.latex(n_sum)
