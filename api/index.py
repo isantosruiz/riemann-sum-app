@@ -257,7 +257,7 @@ def index():
         "a_input": "-2",
         "b_input": "2",
         "n_input": "8",
-        "method_input": "left",
+        "method_input": "right",
         "action_input": "calculate",
         "limit_requested": False,
         "methods": METHODS,
@@ -277,7 +277,7 @@ def index():
         context["a_input"] = request.form.get("a", "").strip()
         context["b_input"] = request.form.get("b", "").strip()
         context["n_input"] = request.form.get("n", "").strip()
-        context["method_input"] = request.form.get("method", "left")
+        context["method_input"] = request.form.get("method", "right")
         context["action_input"] = request.form.get("action", "calculate")
         context["limit_requested"] = context["action_input"] == "limit"
 
