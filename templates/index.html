@@ -4,54 +4,93 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Suma de Riemann</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        color-scheme: light;
-        --bg: #f6f7fb;
-        --card: #ffffff;
-        --text: #16202a;
-        --muted: #5e6a75;
-        --accent: #1976d2;
-        --danger: #d62828;
-        --border: #d9dee5;
+        --bg: #f6f4ec;
+        --panel: #fffdf7;
+        --ink: #1f1b16;
+        --accent: #b35b2f;
+        --border: #d7d2c5;
+        --muted: #5b4b3a;
+      }
+
+      * {
+        box-sizing: border-box;
       }
 
       body {
         margin: 0;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: radial-gradient(circle at 20% 10%, #e7f3ff 0%, var(--bg) 45%);
-        color: var(--text);
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        color: var(--ink);
+        line-height: 1.55;
+        background:
+          radial-gradient(circle at 15% 20%, #fff 0, #f6f4ec 40%),
+          radial-gradient(circle at 85% 0%, #f2e9d5 0, #f6f4ec 55%);
+        min-height: 100vh;
       }
 
-      .container {
-        max-width: 1080px;
-        margin: 1.5rem auto;
-        padding: 0 1rem;
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 2rem 1rem 3rem;
       }
 
       .card {
-        background: var(--card);
+        background: var(--panel);
         border: 1px solid var(--border);
         border-radius: 14px;
-        padding: 1rem;
-        box-shadow: 0 8px 24px rgba(20, 30, 45, 0.06);
+        padding: 1.2rem;
+        box-shadow: 0 10px 28px rgba(95, 71, 48, 0.08);
       }
 
-      h1,
-      h2 {
+      .steps-card {
+        margin-top: 1rem;
+      }
+
+      h1 {
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        font-weight: 700;
         margin-top: 0;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.005em;
+        font-size: clamp(1.55rem, 4vw, 2rem);
+      }
+
+      h2 {
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        font-size: 1.05rem;
+        margin: 0.2rem 0 0.6rem;
+      }
+
+      p.note {
+        margin-top: 0;
+        margin-bottom: 1.2rem;
+        color: var(--muted);
+        font-size: 0.98rem;
+      }
+
+      form {
+        display: grid;
+        gap: 0.95rem;
       }
 
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 0.9rem;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 0.95rem;
       }
 
       label {
         display: flex;
         flex-direction: column;
         font-weight: 600;
+        letter-spacing: 0.01em;
         gap: 0.35rem;
       }
 
@@ -60,115 +99,191 @@
       }
 
       input,
-      select,
-      button {
+      select {
+        width: 100%;
         border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 0.6rem 0.7rem;
-        font-size: 0.95rem;
+        background: #fff;
+        border-radius: 10px;
+        padding: 0.72rem 0.8rem;
+        font-size: 1rem;
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      }
+
+      code {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 0.92em;
       }
 
       button {
+        justify-self: start;
+        border: none;
+        border-radius: 10px;
         background: var(--accent);
-        border-color: var(--accent);
         color: #fff;
-        font-weight: 700;
+        font-size: 1rem;
+        padding: 0.7rem 1.1rem;
         cursor: pointer;
       }
 
       button:hover {
-        filter: brightness(1.05);
+        background: #944a25;
       }
 
-      .error {
-        border: 1px solid #f3a7a7;
-        background: #fff5f5;
-        color: var(--danger);
-        border-radius: 10px;
-        padding: 0.85rem 1rem;
+      .calculate-btn {
+        margin-top: 0.5rem;
       }
 
-      .result-block {
-        margin-top: 1rem;
+      .result {
+        margin-top: 0.2rem;
       }
 
       .formula {
         overflow-x: auto;
-        background: #fafcff;
-        border: 1px solid var(--border);
+        margin: 0.55rem 0;
+        padding: 0.62rem 0.72rem;
         border-radius: 10px;
-        padding: 0.7rem;
-        margin: 0.5rem 0;
+        border: 1px solid #e2dbce;
+        background: #fffefb;
       }
 
-      .numeric {
-        font-size: 1rem;
-        font-weight: 400;
-        color: inherit;
-        margin: 0;
-      }
-
-      .numeric-box {
-        margin-top: 0.9rem;
-        margin-bottom: 1rem;
-        background: #ffffff;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 0.85rem 1rem;
-      }
-
-      .actions {
-        margin-top: 0;
-      }
-
-      .calculate-btn {
-        margin-top: 0.8rem;
-      }
-
-      .limit-btn {
-        margin-top: 0.55rem;
-        margin-bottom: 0.6rem;
-      }
-
-      img {
+      .plot-image {
         width: 100%;
         border-radius: 12px;
         border: 1px solid var(--border);
-        margin-top: 0.5rem;
+        margin-top: 0.55rem;
       }
 
-      .muted {
+      .error {
+        color: #ab1f25;
+        font-weight: 600;
+      }
+
+      .report-title {
+        margin: 0 0 0.8rem;
+      }
+
+      .actions {
+        margin-top: 0.55rem;
+      }
+
+      .actions form {
+        margin: 0;
+      }
+
+      .report-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-top: 0.9rem;
+      }
+
+      .report-print-btn {
+        border: 1px solid #c9c0ae;
+        border-radius: 10px;
+        padding: 0.58rem 1rem;
+        background: linear-gradient(135deg, #f8f2e7, #fffaf0);
+        color: #5f3f2b;
+        font-size: 0.96rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .report-print-btn:hover {
+        background: linear-gradient(135deg, #f3e9da, #fdf4e7);
+      }
+
+      .report-copyright {
+        margin-top: 1rem;
+        font-size: 0.93rem;
         color: var(--muted);
-      }
-
-      .page-footer {
-        margin-top: 1.25rem;
-        margin-bottom: 0.5rem;
         text-align: center;
-        color: var(--muted);
-        font-size: 0.92rem;
       }
 
-      .page-footer a {
+      .report-copyright p {
+        margin: 0;
+      }
+
+      .report-copyright a {
         color: inherit;
         text-decoration: none;
+      }
+
+      #copyright {
+        margin-top: 0.95rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+
+      #copyright p {
+        margin: 0;
+      }
+
+      #copyright a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .print-only {
+        display: none;
+      }
+
+      @media print {
+        body {
+          background: #ffffff;
+        }
+
+        .no-print {
+          display: none !important;
+        }
+
+        main {
+          max-width: 100%;
+          margin: 0;
+          padding: 0 0.25in;
+        }
+
+        .card {
+          box-shadow: none;
+          page-break-inside: avoid;
+          break-inside: avoid-page;
+        }
+
+        .print-only {
+          display: block;
+        }
       }
     </style>
     <script>
       window.MathJax = {
-        tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]] },
+        tex: {
+          inlineMath: [["$", "$"], ["\\(", "\\)"]],
+          displayMath: [["$$", "$$"], ["\\[", "\\]"]]
+        },
         svg: { fontCache: "global" }
       };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script>
+      function printReportPdf() {
+        const doPrint = () => window.print();
+        if (window.MathJax && typeof window.MathJax.typesetPromise === "function") {
+          window.MathJax.typesetPromise().then(doPrint).catch(doPrint);
+          return;
+        }
+        doPrint();
+      }
+    </script>
   </head>
   <body>
-    <div class="container">
-      <div class="card">
+    <main>
+      <section class="card no-print">
         <h1>Suma de Riemann</h1>
-        <p class="muted">
-          Ingresa una función \(f(x)\), un intervalo \([a,b]\), el número de
-          puntos y el método de suma.
+        <p class="note">
+          Ingresa una función \(f(x)\), un intervalo \([a,b]\), el número de puntos \(n\) y el
+          método de suma.
         </p>
 
         <form id="sum-form" method="post">
@@ -215,62 +330,78 @@
           <input type="hidden" name="action" value="calculate" />
           <button class="calculate-btn" type="submit">Calcular la suma</button>
         </form>
-      </div>
+      </section>
 
       {% if error %}
-      <div class="card result-block">
-        <div class="error">{{ error }}</div>
-      </div>
+      <section class="card steps-card">
+        <p class="error">{{ error }}</p>
+      </section>
       {% endif %}
 
       {% if latex_symbolic %}
-      <div class="card result-block">
-        <h2>Resultado</h2>
-        <div class="formula">
-          $$ \displaystyle {{ latex_fx_i|safe }},\quad {{ latex_delta_x|safe }} $$
-        </div>
-        <div class="formula">$$ \displaystyle {{ latex_symbolic|safe }} $$</div>
-        <div class="formula">$$ \displaystyle {{ latex_n_value|safe }} $$</div>
-        {% if plot_base64 %}
-        <img
-          src="data:image/png;base64,{{ plot_base64 }}"
-          alt="Gráfica de la suma de Riemann con área sombreada"
-        />
-        {% endif %}
+      <section class="card steps-card">
+        <h1 class="report-title print-only">Suma de Riemann</h1>
+        <section class="result">
+          <h2 class="print-only">Planteamiento</h2>
+          <div class="formula print-only">
+            $$ \displaystyle {{ latex_problem_statement|safe }} $$
+          </div>
+          <h2>Resultado</h2>
+          <div class="formula">
+            $$ \displaystyle {{ latex_fx_i|safe }},\quad {{ latex_delta_x|safe }} $$
+          </div>
+          <div class="formula">$$ \displaystyle {{ latex_symbolic|safe }} $$</div>
+          <div class="formula">$$ \displaystyle {{ latex_n_value|safe }} $$</div>
 
-        {% if symbolic_notice %}
-        <p class="muted">{{ symbolic_notice }}</p>
-        {% endif %}
+          {% if plot_base64 %}
+          <img
+            class="plot-image"
+            src="data:image/png;base64,{{ plot_base64 }}"
+            alt="Gráfica de la suma de Riemann con área sombreada"
+          />
+          {% endif %}
 
-        <div class="actions">
-          <form method="post">
-            <input type="hidden" name="function" value="{{ function_input }}" />
-            <input type="hidden" name="a" value="{{ a_input }}" />
-            <input type="hidden" name="b" value="{{ b_input }}" />
-            <input type="hidden" name="n" value="{{ n_input }}" />
-            <input type="hidden" name="method" value="{{ method_input }}" />
-            <input type="hidden" name="action" value="limit" />
-            <button class="limit-btn" type="submit">Calcular el límite</button>
-          </form>
-        </div>
+          {% if symbolic_notice %}
+          <p class="note">{{ symbolic_notice }}</p>
+          {% endif %}
 
-        {% if latex_limit_value %}
-        <div class="formula">$$ \displaystyle {{ latex_limit_value|safe }} $$</div>
-        {% endif %}
+          <div class="actions no-print">
+            <form method="post">
+              <input type="hidden" name="function" value="{{ function_input }}" />
+              <input type="hidden" name="a" value="{{ a_input }}" />
+              <input type="hidden" name="b" value="{{ b_input }}" />
+              <input type="hidden" name="n" value="{{ n_input }}" />
+              <input type="hidden" name="method" value="{{ method_input }}" />
+              <input type="hidden" name="action" value="limit" />
+              <button type="submit">Calcular el límite</button>
+            </form>
+          </div>
 
-        {% if limit_error %}
-        <div class="error">{{ limit_error }}</div>
-        {% endif %}
-      </div>
+          {% if latex_limit_value %}
+          <div class="formula">$$ \displaystyle {{ latex_limit_value|safe }} $$</div>
+          {% endif %}
+
+          {% if limit_error %}
+          <p class="error">{{ limit_error }}</p>
+          {% endif %}
+
+          <div class="report-actions no-print">
+            <button class="report-print-btn" type="button" onclick="printReportPdf()">
+              Imprimir reporte PDF
+            </button>
+          </div>
+        </section>
+      </section>
       {% endif %}
 
-      <footer class="page-footer">
-        &copy; 2025,
-        <a href="https://isantosruiz.github.io/home/" target="_blank" rel="noopener noreferrer">
-          Ildeberto de los Santos Ruiz
-        </a>
-      </footer>
-    </div>
+      <div class="report-copyright print-only">
+        <p>&copy; 2025, <a href="https://isantosruiz.github.io/home/">Ildeberto de los Santos Ruiz</a></p>
+      </div>
+      <div id="copyright" class="no-print">
+        <p>&copy; 2025, <a href="https://isantosruiz.github.io/home/">Ildeberto de los Santos Ruiz</a></p>
+      </div>
+    </main>
+
     <script>
       (function () {
         const hasPreviousResult = {{ "true" if latex_symbolic else "false" }};
