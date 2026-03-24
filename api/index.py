@@ -35,6 +35,13 @@ METHODS = {
     "trapezoidal": "Trapezoidal",
 }
 
+METHOD_DESCRIPTORS = {
+    "left": "por la izquierda",
+    "right": "por la derecha",
+    "midpoint": "por el centro",
+    "trapezoidal": "trapezoidal",
+}
+
 ALLOWED_SYMBOLS = {
     "x": x,
     "pi": sp.pi,
@@ -265,6 +272,7 @@ def index():
         "limit_requested": False,
         "methods": METHODS,
         "error": None,
+        "latex_problem_statement": None,
         "latex_fx_i": None,
         "latex_delta_x": None,
         "latex_symbolic": None,
@@ -303,6 +311,16 @@ def index():
             )
             n_sum = sp.simplify(symbolic_sum.subs(n, n_partitions))
             unresolved = unresolved_parameters(expr, a, b)
+
+            descriptor = METHOD_DESCRIPTORS[context["method_input"]]
+            partition_word = (
+                "trapecios" if context["method_input"] == "trapezoidal" else "rectángulos"
+            )
+            context["latex_problem_statement"] = (
+                f"\\text{{Suma de Riemann {descriptor} de }} f(x) = {sp.latex(expr)}"
+                f"\\text{{ en }} [{sp.latex(a)}, {sp.latex(b)}]"
+                f"\\text{{ con {n_partitions} {partition_word}.}}"
+            )
 
             x_i = sp.Symbol("x_i")
             context["latex_fx_i"] = sp.latex(sp.Eq(sp.Function("f")(x_i), f_xi_expr))
